@@ -262,6 +262,7 @@ send us right now.
   gets its video and audio codecs from it.
 
 ## Downloads
+To build Windows packages for this fork, run the ArtCraft Launcher release workflow with a pinned source revision.
 
 **New to EffectCraft?** Download it from the [EffectCraft page on getartcraft.com](https://getartcraft.com/apps/effectcraft). That's the easiest way to install it.
 
