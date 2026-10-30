@@ -722,10 +722,10 @@ fn exposure_field(app: &mut EffectcraftApp, ui: &mut egui::Ui, er: Rect, stops: 
 }
 
 /// Lay out the viewer's control row from `bar.min.x`: magnification, resolution, Fast Previews,
-/// transparency, mask, ROI, grid/guide,
-/// channel/colour management, exposure, snapshot, fast previews, 3D renderer/view and Extended Viewer, timecode and render-time
-/// indicators, running commands or toggling viewer UI state. Returns the width the row
-/// occupies, at least `bar.width()`, for the horizontal scroll area.
+/// transparency, mask, ROI, grid/guide, channel/colour management, exposure, snapshot, 3D
+/// renderer/view and Extended Viewer, timecode and render-time indicators, running commands or
+/// toggling viewer UI state. Returns the width the row occupies, at least `bar.width()`, for the
+/// horizontal scroll area.
 fn bottom_bar_contents(app: &mut EffectcraftApp, ui: &mut egui::Ui, bar: Rect, zoom: f32, time: Tick, comp: &Comp) -> f32 {
     let t = app.tokens;
     let p = ui.painter().clone();
