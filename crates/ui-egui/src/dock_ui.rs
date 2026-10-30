@@ -530,6 +530,11 @@ impl EffectcraftApp {
         let typing = ctx.egui_wants_keyboard_input();
         let events = events.into_iter().filter(|event| !typing && !matches!(event, egui::Event::Text(_) | egui::Event::Ime(_)));
         self.forwarded.events.extend(events);
+        // A floating window's drop names the panel under its pointer, which the main window's
+        // pointer can never hit (#2661).
+        if files.iter().any(|window| matches!(window.panel, PanelKind::Timeline)) {
+            self.forwarded.dropped_on_timeline = true;
+        }
         self.forwarded.files.extend(files.into_iter().flat_map(|window| window.dropped));
         if !self.forwarded.events.is_empty() || !self.forwarded.files.is_empty() {
             ctx.request_repaint();
