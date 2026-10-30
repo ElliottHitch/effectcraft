@@ -164,6 +164,13 @@ impl Pen16<'_> {
     fn dot(&self, x: f32, y: f32, r: f32) {
         self.painter.circle_filled(self.p(x, y), r * self.s(), self.color);
     }
+    /// A filled dot in its own colour, for the icons that are coloured in After Effects too (the
+    /// channel picker's red, green and blue). The tint's alpha is kept, so a dimmed button stays
+    /// dimmed.
+    fn dot_colored(&self, x: f32, y: f32, r: f32, color: Color32) {
+        let a = (color.a() as u16 * self.color.a() as u16 / 255) as u8;
+        self.painter.circle_filled(self.p(x, y), r * self.s(), Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), a));
+    }
     fn rect(&self, x0: f32, y0: f32, x1: f32, y1: f32) {
         let r = Rect::from_min_max(self.p(x0, y0), self.p(x1, y1));
         self.painter.rect_stroke(r, 1.0 * self.s(), Stroke::new(self.width * self.s(), self.color), egui::StrokeKind::Middle);
@@ -653,9 +660,11 @@ pub fn paint(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
             pen.line(&[(6.0, 14.0), (2.0, 14.0), (2.0, 10.0)]);
         }
         Channel => {
-            pen.circle(6.0, 6.5, 3.6);
-            pen.circle(10.0, 6.5, 3.6);
-            pen.circle(8.0, 10.0, 3.6);
+            // After Effects draws this one in colour: red over green and blue, as the channels it
+            // picks between. The shape stays this crate's own; only the three circles are filled.
+            pen.dot_colored(6.2, 6.0, 3.1, Color32::from_rgb(226, 58, 58));
+            pen.dot_colored(10.0, 6.0, 3.1, Color32::from_rgb(58, 200, 88));
+            pen.dot_colored(8.1, 9.9, 3.1, Color32::from_rgb(64, 120, 235));
         }
         Exposure => {
             pen.circle(8.0, 8.0, 5.5);
