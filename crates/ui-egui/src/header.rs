@@ -105,7 +105,12 @@ fn tool_slot(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter, si:
     // Plain click selects the shown tool; Alt/Option-click cycles the flyout slot
     // (After Effects / Photoshop parity with the Shift+letter key cycle).
     let alt = ui.input(|i| i.modifiers.alt);
-    if resp.clicked() && !held {
+    // egui's double-click ignores modifiers: remember the previous click's Alt so
+    // create-on-double-click only runs for two plain clicks (same as PhotoCraft).
+    let prev_alt_id = id.with("click-alt");
+    let prev_alt = ui.data(|d| d.get_temp::<bool>(prev_alt_id)).unwrap_or(false);
+    let slot_click = resp.clicked() && !held;
+    if slot_click {
         let pick = if slot.len() > 1 && alt {
             let from = if slot.contains(&app.ui.tool) { app.ui.tool } else { cur };
             let i = slot.iter().position(|t| *t == from).unwrap_or(0);
@@ -127,10 +132,14 @@ fn tool_slot(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter, si:
         app.ui.status = e;
     } else if resp.double_clicked()
         && !alt
+        && !prev_alt
         && let Some((id, params)) = create_on_double_click(app, cur)
         && let Err(e) = crate::menus::invoke(app, ui.ctx(), id, params)
     {
         app.ui.status = e;
+    }
+    if slot_click {
+        ui.data_mut(|d| d.insert_temp(prev_alt_id, alt));
     }
     if slot.len() > 1 {
         slot_flyout(app, ui, si, slot, &resp, held_id);
