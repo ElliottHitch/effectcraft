@@ -124,7 +124,7 @@ fn pane_selector(app: &mut EffectcraftApp, ui: &mut egui::Ui, pane: usize, area:
     let t = app.tokens;
     let r = Rect::from_min_size(area.min + vec2(6.0, 6.0), vec2(124.0, 20.0));
     let pid = egui::Id::unique(("viewer-pane-view", pane));
-    let response = widgets::dropdown(ui, r, crate::i18n::tr(current.label()), &t, pid);
+    let response = widgets::dropdown(ui, r, super::view3d_label(current), &t, pid);
     if response.clicked() {
         let open = widgets::popup_is_open(ui, pid);
         ui.data_mut(|d| d.insert_temp(pid.with("open"), !open));
@@ -137,7 +137,7 @@ fn pane_selector(app: &mut EffectcraftApp, ui: &mut egui::Ui, pane: usize, area:
         ui.set_min_width(124.0);
         let mut chosen = None;
         for (k, v) in View3D::ALL.iter().enumerate() {
-            let item = ui.selectable_label(*v == current, crate::i18n::tr(v.label()));
+            let item = ui.selectable_label(*v == current, super::view3d_label(*v));
             app.auto.add(&format!("viewer.view.{pane}.typeItem.{k}"), item.rect, v.label());
             if item.clicked() {
                 chosen = Some(*v);
