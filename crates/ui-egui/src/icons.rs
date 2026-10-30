@@ -660,11 +660,11 @@ pub fn paint(painter: &Painter, rect: Rect, icon: Icon, color: Color32) {
             pen.line(&[(6.0, 14.0), (2.0, 14.0), (2.0, 10.0)]);
         }
         Channel => {
-            // After Effects draws this one in colour: red over green and blue, as the channels it
-            // picks between. The shape stays this crate's own; only the three circles are filled.
-            pen.dot_colored(6.2, 6.0, 3.1, Color32::from_rgb(226, 58, 58));
-            pen.dot_colored(10.0, 6.0, 3.1, Color32::from_rgb(58, 200, 88));
-            pen.dot_colored(8.1, 9.9, 3.1, Color32::from_rgb(64, 120, 235));
+            // After Effects draws this one in colour: red, green and blue, as the channels it picks
+            // between. The circles keep the geometry this icon already had; only their fill changes.
+            pen.dot_colored(6.0, 6.5, 3.6, Color32::from_rgb(226, 58, 58));
+            pen.dot_colored(10.0, 6.5, 3.6, Color32::from_rgb(58, 200, 88));
+            pen.dot_colored(8.0, 10.0, 3.6, Color32::from_rgb(64, 120, 235));
         }
         Exposure => {
             pen.circle(8.0, 8.0, 5.5);
