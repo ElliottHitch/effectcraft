@@ -104,11 +104,29 @@ fn tool_slot(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter, si:
     let held = ui.data(|d| d.get_temp::<egui::Id>(held_id)) == Some(id);
     // Plain click selects the shown tool; Alt/Option-click cycles the flyout slot
     // (After Effects / Photoshop parity with the Shift+letter key cycle).
-    let alt = ui.input(|i| i.modifiers.alt);
-    // egui's double-click ignores modifiers: remember the previous click's Alt so
-    // create-on-double-click only runs for two plain clicks (same as PhotoCraft).
-    let prev_alt_id = id.with("click-alt");
-    let prev_alt = ui.data(|d| d.get_temp::<bool>(prev_alt_id)).unwrap_or(false);
+    // Prefer the primary-release event's modifiers: Alt may already be up by the
+    // time this frame reads i.modifiers.
+    let click_mods = ui.input(|i| {
+        i.events
+            .iter()
+            .rev()
+            .find_map(|e| match e {
+                egui::Event::PointerButton {
+                    button: egui::PointerButton::Primary,
+                    pressed: false,
+                    modifiers,
+                    ..
+                } => Some(*modifiers),
+                _ => None,
+            })
+            .unwrap_or(i.modifiers)
+    });
+    let alt = click_mods.alt;
+    let modified = click_mods.alt || click_mods.shift || click_mods.ctrl || click_mods.command;
+    // egui's double-click ignores modifiers: remember whether the previous click
+    // was modified so create-on-double-click only runs for two plain clicks.
+    let prev_mod_id = id.with("click-mod");
+    let prev_modified = ui.data(|d| d.get_temp::<bool>(prev_mod_id)).unwrap_or(false);
     let slot_click = resp.clicked() && !held;
     if slot_click {
         let pick = if slot.len() > 1 && alt {
@@ -126,20 +144,20 @@ fn tool_slot(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter, si:
     // Ctrl+double-click Pan Behind: Center Anchor Point in Layer Content.
     if cur == Tool::PanBehind
         && resp.double_clicked()
-        && ui.input(|i| i.modifiers.command)
+        && click_mods.command
         && let Err(e) = crate::menus::invoke(app, ui.ctx(), "layer.centerAnchor", json!({}))
     {
         app.ui.status = e;
     } else if resp.double_clicked()
-        && !alt
-        && !prev_alt
+        && !modified
+        && !prev_modified
         && let Some((id, params)) = create_on_double_click(app, cur)
         && let Err(e) = crate::menus::invoke(app, ui.ctx(), id, params)
     {
         app.ui.status = e;
     }
     if slot_click {
-        ui.data_mut(|d| d.insert_temp(prev_alt_id, alt));
+        ui.data_mut(|d| d.insert_temp(prev_mod_id, modified));
     }
     if slot.len() > 1 {
         slot_flyout(app, ui, si, slot, &resp, held_id);
