@@ -168,8 +168,9 @@ impl Pen16<'_> {
     /// channel picker's red, green and blue). The tint's alpha is kept, so a dimmed button stays
     /// dimmed.
     fn dot_colored(&self, x: f32, y: f32, r: f32, color: Color32) {
-        let a = (color.a() as u16 * self.color.a() as u16 / 255) as u8;
-        self.painter.circle_filled(self.p(x, y), r * self.s(), Color32::from_rgba_unmultiplied(color.r(), color.g(), color.b(), a));
+        // `gamma_multiply` keeps the premultiplied channels consistent, so a dimmed tint dims the
+        // circle instead of darkening it twice.
+        self.painter.circle_filled(self.p(x, y), r * self.s(), color.gamma_multiply(self.color.a() as f32 / 255.0));
     }
     fn rect(&self, x0: f32, y0: f32, x1: f32, y1: f32) {
         let r = Rect::from_min_max(self.p(x0, y0), self.p(x1, y1));
