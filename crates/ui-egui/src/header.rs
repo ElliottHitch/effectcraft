@@ -830,9 +830,12 @@ fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui, target: &str) {
         ("window.saveWorkspaceAs", "Save as New Workspace..."),
     ] {
         if ui.button(crate::i18n::command_label(id, source)).clicked() {
-            // The menu belongs to the tab it was opened on: saving or resetting from a right click
-            // acts on that workspace, not on whichever one happens to be showing.
-            if app.ui.workspace != target {
+            // The menu belongs to the tab it was opened on, so resetting or saving from a right
+            // click acts on that workspace. Save As and Edit keep working on the workspace that is
+            // showing: Save As would otherwise switch the layout before the user has named the
+            // copy, and cancelling the dialog would leave the switch behind.
+            let acts_on_its_tab = matches!(id, "window.resetWorkspace" | "window.saveWorkspace");
+            if acts_on_its_tab && app.ui.workspace != target {
                 app.set_workspace(target);
             }
             run_workspace_command(app, ui, id);
