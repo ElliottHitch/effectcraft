@@ -178,16 +178,15 @@ pub(crate) fn label<'a>(app: &EffectcraftApp, command: &str, source: &'a str) ->
     // Windows and Linux the source is no longer "Finder" and the catalog's row misses. Every
     // language that names a file manager says so here (#1450); a language with no row keeps the
     // English source rather than a guess.
-    if matches!(command, "file.revealInFinder" | "layer.revealInFinder") {
-        for (code, explorer, manager) in REVEAL_FINDER {
-            if *code != language {
-                continue;
-            }
-            return match source {
-                "Reveal in Explorer" => *explorer,
-                "Reveal in File Manager" => *manager,
-                _ => source,
-            };
+    if matches!(command, "file.revealInFinder" | "layer.revealInFinder")
+        && let Some((_, explorer, manager)) = REVEAL_FINDER.iter().find(|(code, ..)| *code == language)
+    {
+        // Only the Windows and Linux sources are overridden; "Reveal in Finder" keeps going to the
+        // catalog below, which holds the macOS wording.
+        match source {
+            "Reveal in Explorer" => return explorer,
+            "Reveal in File Manager" => return manager,
+            _ => {}
         }
     }
     menu_catalog(language).map_or(source, |catalog| lookup(catalog, command, source))
