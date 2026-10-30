@@ -334,7 +334,8 @@ fn workspace_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter
     let mresp = ui.interact(more, egui::Id::unique("ws-more"), Sense::click());
     p.text(more.center(), Align2::CENTER_CENTER, "»", Tokens::ui(15.0), if mresp.hovered() { t.text } else { t.text_dim });
     app.auto.add("header.workspaces", more, "Workspaces");
-    crate::widgets::context_menu(&mresp, |ui| ws_menu(app, ui));
+    let current = app.ui.workspace.clone();
+    crate::widgets::context_menu(&mresp, |ui| ws_menu(app, ui, &current));
     if mresp.clicked() {
         widgets::open_popup(ui, egui::Id::unique("ws-pop"));
     }
@@ -383,7 +384,8 @@ fn workspace_tabs(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter
         rx = r.min.x - 2.0;
         // Right-clicking a workspace opens the same options as the » button, which is where After
         // Effects keeps them (reset, save, save a copy, edit).
-        resp.context_menu(|ui| ws_menu(app, ui));
+        let target = name.to_string();
+        resp.context_menu(|ui| ws_menu(app, ui, &target));
     }
 }
 
@@ -811,7 +813,7 @@ fn workspace_label(name: &str) -> &str {
     if crate::dock::WORKSPACES.contains(&name) { crate::i18n::command_label("window.workspace", name) } else { name }
 }
 
-fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui) {
+fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui, target: &str) {
     for w in app.workspace_names() {
         if ui.selectable_label(app.ui.workspace == w, workspace_label(&w)).clicked() {
             app.set_workspace(&w);
@@ -828,6 +830,11 @@ fn ws_menu(app: &mut EffectcraftApp, ui: &mut egui::Ui) {
         ("window.saveWorkspaceAs", "Save as New Workspace..."),
     ] {
         if ui.button(crate::i18n::command_label(id, source)).clicked() {
+            // The menu belongs to the tab it was opened on: saving or resetting from a right click
+            // acts on that workspace, not on whichever one happens to be showing.
+            if app.ui.workspace != target {
+                app.set_workspace(target);
+            }
             run_workspace_command(app, ui, id);
             ui.close();
         }
