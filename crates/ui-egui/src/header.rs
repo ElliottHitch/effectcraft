@@ -102,8 +102,21 @@ fn tool_slot(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter, si:
     };
     let resp = resp.on_hover_text(tip);
     let held = ui.data(|d| d.get_temp::<egui::Id>(held_id)) == Some(id);
+    // Plain click selects the shown tool; Alt/Option-click cycles the flyout slot
+    // (After Effects / Photoshop parity with the Shift+letter key cycle).
+    let alt = ui.input(|i| i.modifiers.alt);
     if resp.clicked() && !held {
-        app.ui.tool = cur;
+        let pick = if slot.len() > 1 && alt {
+            let from = if slot.contains(&app.ui.tool) { app.ui.tool } else { cur };
+            let i = slot.iter().position(|t| *t == from).unwrap_or(0);
+            slot[(i + 1) % slot.len()]
+        } else {
+            cur
+        };
+        app.ui.tool = pick;
+        if let Some(saved) = app.ui.slot_tools.get_mut(si) {
+            *saved = pick;
+        }
     }
     // Ctrl+double-click Pan Behind: Center Anchor Point in Layer Content.
     if cur == Tool::PanBehind
@@ -113,6 +126,7 @@ fn tool_slot(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter, si:
     {
         app.ui.status = e;
     } else if resp.double_clicked()
+        && !alt
         && let Some((id, params)) = create_on_double_click(app, cur)
         && let Err(e) = crate::menus::invoke(app, ui.ctx(), id, params)
     {
@@ -901,6 +915,36 @@ mod tests {
     /// (#1072): with nothing selected a shape layer whose shape fills the comp, into the selected
     /// shape layer's Contents, a mask on a non-shape layer, a text layer from the Type tools.
     /// Tools that create nothing stay quiet.
+    /// Alt/Option-click cycles a Tools-bar flyout slot without opening the menu.
+    #[test]
+    fn alt_click_cycles_the_type_slot() {
+        let mut app = EffectcraftApp::new(effectcraft_engine::Session::default());
+        let ctx = egui::Context::default();
+        crate::theme::install(&ctx, &app.tokens, crate::i18n::language(&app));
+        frame(&mut app, &ctx, 0.0, vec![]);
+        frame(&mut app, &ctx, 0.1, vec![]);
+        let center = |element: &crate::automation::Element| {
+            let [x, y, w, h] = element.rect;
+            egui::pos2(x + w / 2.0, y + h / 2.0)
+        };
+        let at = center(app.auto.elements.iter().find(|w| w.id == "tools.Type").unwrap());
+        let alt = egui::Modifiers { alt: true, ..Default::default() };
+        let pointer = |pos, pressed, modifiers| egui::Event::PointerButton { pos, button: egui::PointerButton::Primary, pressed, modifiers };
+        app.ui.tool = Tool::Type;
+        app.ui.slot_tools[10] = Tool::Type;
+        frame(&mut app, &ctx, 1.0, vec![egui::Event::ModifiersChanged(alt), egui::Event::PointerMoved(at), pointer(at, true, alt)]);
+        frame(&mut app, &ctx, 1.05, vec![egui::Event::ModifiersChanged(alt), pointer(at, false, alt)]);
+        frame(&mut app, &ctx, 1.1, vec![]);
+        assert_eq!(app.ui.tool, Tool::TypeVertical);
+        assert_eq!(app.ui.slot_tools[10], Tool::TypeVertical);
+        assert!(!app.auto.elements.iter().any(|w| w.id.starts_with("tools.select.")), "Alt-click must not open the flyout");
+        frame(&mut app, &ctx, 1.5, vec![egui::Event::ModifiersChanged(alt), egui::Event::PointerMoved(at), pointer(at, true, alt)]);
+        frame(&mut app, &ctx, 1.55, vec![egui::Event::ModifiersChanged(alt), pointer(at, false, alt)]);
+        frame(&mut app, &ctx, 1.6, vec![]);
+        assert_eq!(app.ui.tool, Tool::Type, "wraps back to Type");
+    }
+
+
     #[test]
     fn double_clicking_creation_tools_makes_instances() {
         let mut s = effectcraft_engine::Session::default();
