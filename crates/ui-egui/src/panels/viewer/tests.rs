@@ -158,7 +158,7 @@ fn edge_pan_speed_moves_toward_the_edge() {
 fn every_3d_view_finds_its_japanese_row() {
     crate::i18n::ui::set_current("ja");
     for v in View3D::ALL {
-        assert_ne!(view3d_label(*v), v.label(), "{v:?} has no Japanese row");
+        assert_ne!(view3d_label(v), v.label(), "{v:?} has no Japanese row");
     }
     crate::i18n::ui::set_current("en");
 }
