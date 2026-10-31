@@ -388,10 +388,12 @@ pub(super) fn vegas(ctx: &EffectCtx, mut b: Buf) -> Buf {
 }
 
 /// Sub-samples per Vegas segment: at least 12 (opacity ramp), more for long segments so each straight piece stays
-/// short compared with the stroke width and the segment follows rounded corners smoothly.
+/// short compared with the stroke width and the segment follows rounded corners smoothly. Always even.
 pub(super) fn vegas_substeps(each: f64, width: f64) -> usize {
     let step = width.max(2.0);
-    ((each / step).ceil().max(12.0) as usize).min(512)
+    let n = ((each / step).ceil().max(12.0) as usize).min(512);
+    // Even, so the segment's midpoint (0.5) is always one of the samples.
+    n + (n & 1)
 }
 
 fn vegas_plan(ctx: &EffectCtx, b: &Buf) -> PaintPlan {
