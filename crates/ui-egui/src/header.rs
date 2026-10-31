@@ -434,7 +434,7 @@ fn workspace_tabs(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter
         // Right-clicking a workspace opens the same options as the » button, which is where After
         // Effects keeps them (reset, save, save a copy, edit).
         let target = name.to_string();
-        resp.context_menu(|ui| ws_menu(app, ui, &target));
+        crate::widgets::context_menu(&resp, |ui| ws_menu(app, ui, &target));
     }
 }
 
@@ -979,10 +979,6 @@ mod tests {
         assert!(!app.auto.elements.iter().any(|w| w.id == "tools.select.TypeVertical"));
     }
 
-    /// Double-clicking a creation tool in the Tools bar makes an instance of what it draws
-    /// (#1072): with nothing selected a shape layer whose shape fills the comp, into the selected
-    /// shape layer's Contents, a mask on a non-shape layer, a text layer from the Type tools.
-    /// Tools that create nothing stay quiet.
     /// Alt/Option-click cycles a Tools-bar flyout slot without opening the menu.
     #[test]
     fn alt_click_cycles_the_type_slot() {
@@ -1051,6 +1047,10 @@ mod tests {
         assert!(app.session.state.text_edit.is_none());
     }
 
+    /// Double-clicking a creation tool in the Tools bar makes an instance of what it draws
+    /// (#1072): with nothing selected a shape layer whose shape fills the comp, into the selected
+    /// shape layer's Contents, a mask on a non-shape layer, a text layer from the Type tools.
+    /// Tools that create nothing stay quiet.
     #[test]
     fn double_clicking_creation_tools_makes_instances() {
         let mut s = effectcraft_engine::Session::default();
