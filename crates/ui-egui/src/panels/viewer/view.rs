@@ -101,7 +101,7 @@ pub(super) fn aux_views(
             let map = ViewerMap { origin: cr.min, zoom: fit, comp: [cw, ch], area: r };
             draw_rigs(app, &p.with_clip_rect(r), &map, &ectx, &selected, cam, through_active, Some(v.id()));
         }
-        let label = if comp.has_3d() { v.label() } else { crate::i18n::tr("Active Camera") };
+        let label = if comp.has_3d() { super::view3d_label(v) } else { crate::i18n::tr("Active Camera") };
         p.text(r.left_bottom() + vec2(8.0, -8.0), Align2::LEFT_BOTTOM, label, Tokens::ui(11.0), Color32::from_white_alpha(200));
         app.auto.add(&format!("viewer.view.{}", v.id()), r, label);
         if comp.has_3d()
