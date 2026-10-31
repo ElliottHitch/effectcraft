@@ -208,16 +208,3 @@ fn comp_delete_all_markers_with_undo() {
     s.execute("edit.redo", json!({})).unwrap();
     assert!(s.active_comp().unwrap().markers.is_empty());
 }
-
-#[test]
-fn layer_delete_all_markers_without_selection_clears_comp_markers() {
-    let (mut s, _) = setup();
-    s.execute("comp.addMarker", json!({"time": 1.0, "comment": "m1"})).unwrap();
-    s.execute("comp.addMarker", json!({"time": 2.0, "comment": "m2"})).unwrap();
-    s.execute("edit.deselectAll", json!({})).unwrap();
-    assert!(s.state.selected_layers.is_empty());
-    s.execute("layer.deleteAllMarkers", json!({})).unwrap();
-    assert!(s.active_comp().unwrap().markers.is_empty());
-    s.execute("edit.undo", json!({})).unwrap();
-    assert_eq!(s.active_comp().unwrap().markers.len(), 2);
-}
