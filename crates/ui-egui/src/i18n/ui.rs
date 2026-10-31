@@ -2891,7 +2891,7 @@ const SWEDISH: &[(&str, &str)] = &[
     ("Show Channel and Color Management Settings", "Visa inställningar för kanal och färghantering"),
     ("Show Snapshot (hold)", "Visa ögonblicksbild (håll ned)"),
     ("Take Snapshot", "Ta ögonblicksbild"),
-    ("Third", "Tredje"),
+    ("Third", "En tredjedel"),
     ("Toggle Mask and Shape Path Visibility", "Växla synlighet för mask- och formbanor"),
     ("Toggle Transparency Grid", "Växla transparensrutnät"),
     ("16 bits per channel", "16 bitar per kanal"),
