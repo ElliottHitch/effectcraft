@@ -9741,7 +9741,7 @@ const FRENCH: &[(&str, &str)] = &[
     ("Click to sample color", "Cliquez pour échantillonner la couleur"),
     ("Advanced", "Avancé"),
     ("Rescan Fonts", "Réanalyser les polices"),
-    ("Track Matte pick whip: drag onto a layer", "Lasso d’estampe : faites glisser vers un calque"),
+    ("Track Matte pick whip: drag onto a layer", "Sélecteur d’estampe : faites glisser vers un calque"),
     ("Play/Stop", "Lecture/Arrêt"),
     ("Selection Tool", "Outil Sélection"),
     ("Hand Tool", "Outil Main"),

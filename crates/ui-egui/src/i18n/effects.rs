@@ -481,7 +481,7 @@ const TRADITIONAL_CHINESE: &[Row] = &[];
 /// the `CC` series, which AE 2026 leaves in English.
 const JAPANESE_EFFECTS: &[Row] = &[
     // Effects this application adds itself have no interface to read a name from, so they follow
-    // the Chinese catalog's choice to translate them (顔の計測, 顔のトラックポイント) rather than
+    // the Chinese catalog's choice to translate them (顔の測定, 顔のトラッキングポイント) rather than
     // staying English. Unmult stays English: that is what the interface it comes from shows.
     ("ec.3d.instance3d", "3D Layer Instance", "3Dレイヤーインスタンス"),
     ("ec.color.broadcast", "Broadcast Colors", "ブロードキャストカラー"),

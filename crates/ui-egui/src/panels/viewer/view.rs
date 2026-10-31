@@ -200,7 +200,7 @@ pub(super) fn locked_pane(app: &mut EffectcraftApp, ui: &mut egui::Ui, full: Rec
     p.rect_filled(cr, 0.0, Color32::from_rgb((b[0] * 255.0) as u8, (b[1] * 255.0) as u8, (b[2] * 255.0) as u8));
     p.image(tex.id(), cr, Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)), Color32::WHITE);
     p.rect_stroke(cr, 0.0, Stroke::new(1.0, Color32::from_black_alpha(160)), StrokeKind::Outside);
-    let label = crate::i18n::tr_args("Locked: {} — {}", &[&name, &(if comp.has_3d() { lv.view.label() } else { crate::i18n::tr("Active Camera") })]);
+    let label = crate::i18n::tr_args("Locked: {} — {}", &[&name, &(if comp.has_3d() { super::view3d_label(lv.view) } else { crate::i18n::tr("Active Camera") })]);
     p.text(r.left_top() + vec2(8.0, 8.0), Align2::LEFT_TOP, &label, Tokens::ui(11.0), Color32::from_white_alpha(210));
     app.auto.add("viewer.locked", r, &label);
     // Close the locked viewer.
