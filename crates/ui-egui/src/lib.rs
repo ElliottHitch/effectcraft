@@ -13,6 +13,8 @@ pub(crate) mod a11y;
 /// prompt shows both, and an AppImage's menu entry gets the icon.
 #[cfg(not(target_arch = "wasm32"))]
 pub const UPDATE_APP: craft_update::app::App = craft_update::app::App {
+    // This fork checks its own releases, so an update never replaces it with an upstream build.
+    repo: "ElliottHitch/effectcraft",
     icon_png: Some(include_bytes!("../../../assets/app-icon/hicolor/128x128/apps/ai.storyteller.effectcraft.png")),
     accent: Some([0xe0, 0x36, 0x8f]),
     ..craft_update::suite::EFFECTCRAFT
