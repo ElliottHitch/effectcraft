@@ -82,3 +82,12 @@ fn invalid_values_are_errors_and_change_nothing() {
     }
     assert_eq!(s.active_comp().unwrap().layers.len(), n);
 }
+
+/// `in` applies before `out` (as `layer.timing`), so a range before the layer's start lands as asked.
+#[test]
+fn in_and_out_before_the_start_land_and_a_three_value_anchor_is_refused() {
+    let (mut s, item, _) = setup();
+    let id = s.execute_checked("layer.addItem", json!({"item": item, "time": 5.0, "in": 1.0, "out": 2.0})).unwrap()["layer"].as_u64().unwrap();
+    assert_eq!((secs(layer(&s, id).in_point), secs(layer(&s, id).out_point)), (1.0, 2.0));
+    assert!(s.execute_checked("layer.addItem", json!({"item": item, "anchor": [1.0, 2.0, 3.0]})).is_err());
+}

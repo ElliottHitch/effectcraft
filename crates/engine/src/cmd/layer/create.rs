@@ -279,6 +279,7 @@ fn anchor_param(p: &Value, cmd: &str) -> Result<Option<[f64; 2]>> {
         None | Some(Value::Null) => Ok(None),
         Some(v) => v
             .as_array()
+            .filter(|a| a.len() == 2)
             .and_then(|a| Some([a.first()?.as_f64()?, a.get(1)?.as_f64()?]))
             .filter(|c| c.iter().all(|x| x.is_finite() && x.abs() <= MAX_PLACEMENT))
             .map(Some)
@@ -361,11 +362,12 @@ pub(super) fn add_item(s: &mut Session, p: &Value) -> Result<Value> {
         l.out_point = fr.snap_nearest(end).max(start + fr.frame_duration());
         // `in` / `out` are comp times like `layer.timing`'s; each keeps at least one frame.
         let fd = fr.frame_duration();
-        if let Some(o) = out_p {
-            l.out_point = fr.snap_nearest(o).max(l.in_point + fd);
-        }
+        // In first, as `layer.timing` does, so an `out` before the layer's start still lands.
         if let Some(i) = in_p {
             l.in_point = fr.snap_nearest(i).min(l.out_point - fd);
+        }
+        if let Some(o) = out_p {
+            l.out_point = fr.snap_nearest(o).max(l.in_point + fd);
         }
         place(&mut l, position);
         set_anchor(&mut l, anchor);
