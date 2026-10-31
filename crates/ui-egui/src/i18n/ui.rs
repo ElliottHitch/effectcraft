@@ -3178,7 +3178,6 @@ const SWEDISH: &[(&str, &str)] = &[
     ("Guide Layer", "Hjälplager"),
     ("Layer Styles", "Lagerstilar"),
     ("Check for Updates", "Sök efter uppdateringar"),
-    ("Checking for updates…", "Söker efter uppdateringar…"),
     ("Close font search", "Stäng typsnittssökningen"),
     ("Search project", "Sök i projektet"),
     ("Update check is not supported in the web browser.", "Sökning efter uppdateringar stöds inte i webbläsaren."),

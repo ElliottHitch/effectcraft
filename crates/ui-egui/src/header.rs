@@ -111,13 +111,9 @@ fn tool_slot(app: &mut EffectcraftApp, ui: &mut egui::Ui, p: &egui::Painter, si:
         i.events
             .iter()
             .filter_map(|e| match e {
-                egui::Event::PointerButton {
-                    pos,
-                    button: egui::PointerButton::Primary,
-                    pressed: false,
-                    modifiers,
-                    ..
-                } if resp.rect.contains(*pos) => Some(*modifiers),
+                egui::Event::PointerButton { pos, button: egui::PointerButton::Primary, pressed: false, modifiers, .. } if resp.rect.contains(*pos) => {
+                    Some(*modifiers)
+                }
                 _ => None,
             })
             .collect()
@@ -1023,25 +1019,14 @@ mod tests {
         let at = egui::pos2(e.rect[0] + e.rect[2] / 2.0, e.rect[1] + e.rect[3] / 2.0);
         let alt = egui::Modifiers { alt: true, ..Default::default() };
         let plain = egui::Modifiers::default();
-        let pointer = |pos, pressed, modifiers| egui::Event::PointerButton {
-            pos,
-            button: egui::PointerButton::Primary,
-            pressed,
-            modifiers,
-        };
+        let pointer = |pos, pressed, modifiers| egui::Event::PointerButton { pos, button: egui::PointerButton::Primary, pressed, modifiers };
         app.ui.tool = Tool::Type;
         app.ui.slot_tools[10] = Tool::Type;
         frame(
             &mut app,
             &ctx,
             1.0,
-            vec![
-                egui::Event::PointerMoved(at),
-                pointer(at, true, alt),
-                pointer(at, false, alt),
-                pointer(at, true, plain),
-                pointer(at, false, plain),
-            ],
+            vec![egui::Event::PointerMoved(at), pointer(at, true, alt), pointer(at, false, alt), pointer(at, true, plain), pointer(at, false, plain)],
         );
         assert!(app.session.active_comp().unwrap().layers.is_empty(), "Alt then plain in one frame must not create");
         assert!(app.session.state.text_edit.is_none());

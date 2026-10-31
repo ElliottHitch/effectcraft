@@ -401,8 +401,8 @@ fn vegas_long_segments_are_sampled_finely() {
     // A short segment keeps the 12 samples; a long one gets more so it bends smoothly round rounded corners.
     assert_eq!(super::paths::vegas_substeps(10.0, 4.0), 12);
     let n = super::paths::vegas_substeps(400.0, 4.0);
-    assert!(n > 12 && n % 2 == 0, "{n}");
-    assert_eq!(super::paths::vegas_substeps(13.0 * 4.0, 4.0) % 2, 0);
+    assert!(n > 12 && n.is_multiple_of(2), "{n}");
+    assert!(super::paths::vegas_substeps(13.0 * 4.0, 4.0).is_multiple_of(2));
     assert!(400.0 / n as f64 <= 4.0 + 1e-9);
     assert_eq!(super::paths::vegas_substeps(1.0e9, 4.0), 512);
 }

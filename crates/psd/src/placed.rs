@@ -552,7 +552,12 @@ mod tests {
 
     #[test]
     fn a_thin_output_is_not_refused_for_rounding() {
-        let s = SmartObject { uuid: "x".into(), quad: [[0.0, 0.0], [16384.0, 0.0], [16384.0, 1.0], [0.0, 1.0]], size: None, warp: Some(Warp { style: "warpArc".into(), bounds: [0.0, 0.0, 16.0, 16.0], bend: 20.0, ..Default::default() }) };
+        let s = SmartObject {
+            uuid: "x".into(),
+            quad: [[0.0, 0.0], [16384.0, 0.0], [16384.0, 1.0], [0.0, 1.0]],
+            size: None,
+            warp: Some(Warp { style: "warpArc".into(), bounds: [0.0, 0.0, 16.0, 16.0], bend: 20.0, ..Default::default() }),
+        };
         let content = Pixels { width: 16, height: 16, data: vec![[1.0, 0.0, 0.0, 1.0]; 256] };
         assert!(s.render_placed(&content, 1.0, Some((16384, 1))).is_some());
     }
