@@ -360,7 +360,11 @@ impl SmartObject {
             o
         };
         let idx = |i: usize, j: usize| j * (n + 1) + i;
-        let budget = (count as u64).saturating_mul(BAKE_WORK_FACTOR).max(MIN_BAKE_WORK);
+        // A sane mesh's triangles each span about one grid cell (ow/n by oh/n), rounded out to
+        // whole pixels. A thin output (16384×1) stacks every grid row onto the same pixel row, so
+        // allow each of the 2n² triangles about two cells' extent along each axis, with margin.
+        let rounding = (4 * n as u64).saturating_mul((ow as u64).saturating_add(oh as u64).saturating_add(n as u64));
+        let budget = (count as u64).saturating_mul(BAKE_WORK_FACTOR).max(MIN_BAKE_WORK).saturating_add(rounding);
         let mut work = 0u64;
         for j in 0..n {
             for i in 0..n {
@@ -544,5 +548,12 @@ mod tests {
         let s = SmartObject { uuid: "x".into(), quad: [[0.0, 0.0], [2048.0, 0.0], [2048.0, 2048.0], [0.0, 2048.0]], size: None, warp: Some(warp) };
         let content = Pixels { width: 16, height: 16, data: vec![[1.0, 0.0, 0.0, 1.0]; 256] };
         assert!(s.render_placed(&content, 1.0, Some((2048, 2048))).is_none());
+    }
+
+    #[test]
+    fn a_thin_output_is_not_refused_for_rounding() {
+        let s = SmartObject { uuid: "x".into(), quad: [[0.0, 0.0], [16384.0, 0.0], [16384.0, 1.0], [0.0, 1.0]], size: None, warp: Some(Warp { style: "warpArc".into(), bounds: [0.0, 0.0, 16.0, 16.0], bend: 20.0, ..Default::default() }) };
+        let content = Pixels { width: 16, height: 16, data: vec![[1.0, 0.0, 0.0, 1.0]; 256] };
+        assert!(s.render_placed(&content, 1.0, Some((16384, 1))).is_some());
     }
 }
