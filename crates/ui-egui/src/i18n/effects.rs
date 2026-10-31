@@ -479,7 +479,7 @@ const JAPANESE_EFFECTS: &[Row] = &[
     ("ec.key.screen", "Screen Key", "スクリーンキー"),
     ("ec.key.unmult", "Unmult", "Unmult"),
     ("ec.matte.objectmatte", "Object Matte", "オブジェクトマット"),
-    ("ec.matte.rotobrush", "Roto Brush & Refine Edge", "ロトブラシとエッジを調整"),
+    ("ec.matte.rotobrush", "Roto Brush & Refine Edge", "ロトブラシとエッジの調整"),
     ("ec.paint.paint", "Paint", "ペイント"),
     ("ec.utility.facemeasurements", "Face Measurements", "顔の測定"),
     ("ec.utility.facetrackpoints", "Face Track Points", "顔のトラッキングポイント"),
