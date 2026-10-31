@@ -1807,3 +1807,50 @@ fn automation_roots_confine_the_footage_a_project_names() {
     }
     let _ = std::fs::remove_dir_all(&base);
 }
+
+/// A symbolic link inside the read root, read once while it pointed inside, is checked again
+/// on every read: pointed outside afterwards, its footage must not come back once the frame
+/// cache is emptied.
+#[cfg(unix)]
+#[test]
+fn automation_roots_check_relinked_footage_again() {
+    use crate::confine::Confinement;
+    let base = std::env::temp_dir().join(format!("ec-mcp-relink-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&base);
+    let (read, write, outside) = (base.join("in"), base.join("out"), base.join("elsewhere"));
+    for d in [&read, &write, &outside] {
+        std::fs::create_dir_all(d).unwrap();
+    }
+    image::RgbaImage::from_pixel(8, 8, image::Rgba([0, 0, 255, 255])).save(read.join("own.png")).unwrap();
+    image::RgbaImage::from_pixel(8, 8, image::Rgba([255, 0, 0, 255])).save(outside.join("secret.png")).unwrap();
+    let link = read.join("link.png");
+    std::os::unix::fs::symlink(read.join("own.png"), &link).unwrap();
+    let link_path = link.to_string_lossy().into_owned();
+    let project = read.join("relink.ecproj").to_string_lossy().into_owned();
+    {
+        let mut s = McpServer::new(Backend::headless(effectcraft_host::session()));
+        call_json(&mut s, "execute_command", json!({"command": "comp.new", "params": {"name": "C", "width": 8, "height": 8}}));
+        let imported = call_json(&mut s, "execute_command", json!({"command": "file.import", "params": {"paths": [link_path]}}));
+        let item = imported["items"][0].as_u64().or_else(|| imported["item"].as_u64()).unwrap_or_else(|| panic!("{imported}"));
+        call_json(&mut s, "execute_command", json!({"command": "layer.addItem", "params": {"comp": "C", "item": item}}));
+        call_json(&mut s, "save_project", json!({"path": project}));
+    }
+    // The middle pixel of comp C.
+    let pixel = |s: &mut McpServer| {
+        let (c, err) = call(s, "render_frame", json!({"comp": "C"}));
+        assert!(!err, "{c:?}");
+        let png = base64::decode(c[0]["data"].as_str().unwrap()).unwrap();
+        image::load_from_memory(&png).unwrap().to_rgba8().get_pixel(4, 4).0
+    };
+    let mut s = McpServer::new(Backend::headless(effectcraft_host::session()));
+    s.backend().confine(Confinement::new(std::slice::from_ref(&read), std::slice::from_ref(&write)).unwrap());
+    call_json(&mut s, "open_project", json!({"path": project}));
+    let px = pixel(&mut s);
+    assert!(px[2] > 200 && px[0] < 50, "the link pointing inside renders: {px:?}");
+    std::fs::remove_file(&link).unwrap();
+    std::os::unix::fs::symlink(outside.join("secret.png"), &link).unwrap();
+    call_json(&mut s, "execute_command", json!({"command": "edit.purge", "params": {"what": "memory"}}));
+    let px = pixel(&mut s);
+    assert!(!(px[0] > 200 && px[3] > 200), "the link pointed outside afterwards was read: {px:?}");
+    let _ = std::fs::remove_dir_all(&base);
+}

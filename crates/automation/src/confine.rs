@@ -14,10 +14,9 @@
 //! Execute File, Reveal in Finder…) are refused while confined, as is granting scripts the file
 //! and network access the user withheld.
 
-use std::collections::HashMap;
 use std::path::{Component, Path, PathBuf};
+use std::sync::Arc;
 use std::sync::atomic::AtomicBool;
-use std::sync::{Arc, Mutex, PoisonError};
 
 use effectcraft_engine::Services;
 use effectcraft_engine::project::{Footage, ItemId};
@@ -319,22 +318,18 @@ impl Confinement {
 pub struct ConfinedFootage {
     inner: Arc<dyn FootageSource>,
     confinement: Confinement,
-    /// Whether each footage path checked so far is inside: frames are read many times.
-    checked: Mutex<HashMap<String, bool>>,
 }
 
 impl ConfinedFootage {
     pub fn new(inner: Arc<dyn FootageSource>, confinement: Confinement) -> Self {
-        Self { inner, confinement, checked: Mutex::default() }
+        Self { inner, confinement }
     }
 
     /// Whether every file of `f` (its file and each frame of a sequence) is inside the roots.
+    /// Checked on every read, not remembered: a symbolic link inside a root can be pointed
+    /// elsewhere after it was first read.
     fn inside(&self, f: &Footage) -> bool {
-        let mut checked = self.checked.lock().unwrap_or_else(PoisonError::into_inner);
-        std::iter::once(&f.path)
-            .chain(&f.sequence)
-            .filter(|p| !p.is_empty())
-            .all(|p| *checked.entry(p.clone()).or_insert_with(|| self.confinement.check(p, Access::Read).is_ok()))
+        std::iter::once(&f.path).chain(&f.sequence).filter(|p| !p.is_empty()).all(|p| self.confinement.check(p, Access::Read).is_ok())
     }
 }
 
@@ -374,7 +369,6 @@ impl FootageSource for ConfinedFootage {
         self.inner.purge()
     }
     fn forget(&self, path: &str) {
-        self.checked.lock().unwrap_or_else(PoisonError::into_inner).remove(path);
         self.inner.forget(path)
     }
     fn set_conform_folder(&self, folder: Option<PathBuf>) {
